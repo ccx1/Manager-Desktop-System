@@ -1,9 +1,13 @@
 server:
   port: 42095
-#  servlet:
-#    context-path: /api/v1
-#
-#spring:
-#  thymeleaf:
-#    prefix: classpath:/templates/
-#    suffix: .html
+  servlet:
+    context-path: /manager
+
+spring:
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+
+
+shiro:
+  successUrl: "/success"
