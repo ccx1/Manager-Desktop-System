@@ -11,3 +11,8 @@ spring:
 
 shiro:
   successUrl: "/success"
+
+cas:
+  successUrlPattern: "/loginCas"
+  casFilterUrlPattern: "/user"
+  serviceUrl: "http://127.0.0.1:${server.port}${server.servlet.context-path}"

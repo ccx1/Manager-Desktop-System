@@ -27,12 +27,12 @@ $(document).ready(function () {
             cache: false,
             success(data) {
                 if (data.code === 200) {
-                    // let urlParams = getUrlParams("redirect");
-                    // if (urlParams) {
-                    //     // window.location.replace(decodeURIComponent(urlParams))
-                    // }else {
-                    //     // window.location.replace(`${ window.location.protocol}//${window.location.host}/admin/success`)
-                    // }
+                    let urlParams = getUrlParams("redirect");
+                    if (urlParams) {
+                        window.location.replace(decodeURIComponent(urlParams))
+                    }else {
+                        window.location.replace(`${ window.location.protocol}//${window.location.host}/manager/success`)
+                    }
                 }else {
                     errorText.empty()
                     errorText.append(data.msg)

@@ -7,6 +7,7 @@ import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSource
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
@@ -23,6 +24,15 @@ import java.util.Map;
 @Configuration
 public class ShiroConfig {
 
+    @Value("${cas.successUrlPattern}")
+    private String successUrlPattern;
+
+    @Value("${cas.casFilterUrlPattern}")
+    private String casFilterUrlPattern;
+
+    @Value("${cas.serviceUrl}")
+    private String serviceUrl;
+
 
     @Bean
     public Realm realm() {
@@ -36,9 +46,10 @@ public class ShiroConfig {
         Map<String, String> filterChainDefinitionMap = new LinkedHashMap<>();
         filterChainDefinitionMap.put("/user/login", "anon");
         filterChainDefinitionMap.put("/res/**", "anon");
+        filterChainDefinitionMap.put("/login", "anon");
         filterChainDefinitionMap.put("/**", "authc");
-        shiroFilterFactoryBean.setLoginUrl("/");
-        shiroFilterFactoryBean.setSuccessUrl("/success");
+        shiroFilterFactoryBean.setLoginUrl("/login?redirect=" + serviceUrl + casFilterUrlPattern + successUrlPattern);
+        shiroFilterFactoryBean.setUnauthorizedUrl("/login?redirect=" + serviceUrl + casFilterUrlPattern + successUrlPattern);
         shiroFilterFactoryBean.setFilterChainDefinitionMap(filterChainDefinitionMap);
         return shiroFilterFactoryBean;
     }

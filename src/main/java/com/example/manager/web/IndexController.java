@@ -7,12 +7,17 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class IndexController {
 
     @GetMapping("/success")
+    public String success() {
+        return "success";
+    }
+
+
+    @GetMapping("/index")
     public String index() {
-        System.out.println("调用");
         return "index";
     }
 
-    @GetMapping("/")
+    @GetMapping("/login")
     public String login() {
         return "login";
     }
