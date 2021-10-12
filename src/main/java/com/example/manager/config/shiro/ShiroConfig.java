@@ -1,6 +1,7 @@
 package com.example.manager.config.shiro;
 
 import com.example.manager.config.shiro.realm.ShiroAuthorizingRealm;
+import com.example.manager.utils.IpUtils;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.session.mgt.SessionManager;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
@@ -12,6 +13,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -27,8 +32,6 @@ public class ShiroConfig {
     @Value("${cas.successUrlPattern}")
     private String successUrlPattern;
 
-    @Value("${cas.casFilterUrlPattern}")
-    private String casFilterUrlPattern;
 
     @Value("${cas.serviceUrl}")
     private String serviceUrl;
@@ -48,8 +51,15 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/res/**", "anon");
         filterChainDefinitionMap.put("/login", "anon");
         filterChainDefinitionMap.put("/**", "authc");
-        shiroFilterFactoryBean.setLoginUrl("/login?redirect=" + serviceUrl + casFilterUrlPattern + successUrlPattern);
-        shiroFilterFactoryBean.setUnauthorizedUrl("/login?redirect=" + serviceUrl + casFilterUrlPattern + successUrlPattern);
+        if (serviceUrl.contains("127.0.0.1")) {
+            try {
+                serviceUrl = serviceUrl.replace("127.0.0.1", IpUtils.getIpAdd());
+            } catch (UnknownHostException | SocketException e) {
+                e.printStackTrace();
+            }
+        }
+        shiroFilterFactoryBean.setLoginUrl("/login?redirect=" + serviceUrl + successUrlPattern);
+        shiroFilterFactoryBean.setUnauthorizedUrl("/login?redirect=" + serviceUrl + successUrlPattern);
         shiroFilterFactoryBean.setFilterChainDefinitionMap(filterChainDefinitionMap);
         return shiroFilterFactoryBean;
     }

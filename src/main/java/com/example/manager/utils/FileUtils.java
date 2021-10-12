@@ -19,9 +19,11 @@ import java.util.Random;
 
 public class FileUtils {
 
-
     public static List<File> listFile(String path) {
         File file = new File(path);
+        if (!file.exists()) {
+            file.mkdirs();
+        }
         if (file.isDirectory()) {
             return Arrays.asList(file.listFiles());
         }
@@ -35,6 +37,31 @@ public class FileUtils {
             return Arrays.asList(files);
         }
         return Collections.EMPTY_LIST;
+    }
+
+
+    /**
+     * 文件以及路径得同名处理
+     *
+     * @param name
+     * @param filepath
+     * @param shuffix
+     * @param num
+     * @return
+     */
+    public static String onlyName(String filepath, String name, String shuffix, int num) {
+        File file = new File(filepath, name);
+        if (file.exists()) {
+            int num2 = num - 1;
+            if (shuffix == null) {
+                name = name.replace("(" + num2 + ")", "") + "(" + num + ")";
+            } else {
+                name = name.replace("." + shuffix, "").replace("(" + num2 + ")", "") + "(" + num + ")" + "." + shuffix;
+            }
+            num += 1;
+            return onlyName(filepath, name, shuffix, num);
+        }
+        return name;
     }
 
 
@@ -150,7 +177,7 @@ public class FileUtils {
     }
 
     public static void deleteFile(File file) {
-//判断文件不为null或文件目录存在
+        //判断文件不为null或文件目录存在
         if (file == null || !file.exists()) {
             throw new CodeException(HttpStatus.FILE_NOT_FIND);
         }
@@ -165,5 +192,35 @@ public class FileUtils {
         file.delete();
     }
 
+
+    public static String getExtension(String filename) {
+        if (filename == null) {
+            return null;
+        } else {
+            int index = indexOfExtension(filename);
+            return index == -1 ? "" : filename.substring(index + 1);
+        }
+    }
+
+
+    public static int indexOfLastSeparator(String filename) {
+        if (filename == null) {
+            return -1;
+        } else {
+            int lastUnixPos = filename.lastIndexOf(47);
+            int lastWindowsPos = filename.lastIndexOf(92);
+            return Math.max(lastUnixPos, lastWindowsPos);
+        }
+    }
+
+    public static int indexOfExtension(String filename) {
+        if (filename == null) {
+            return -1;
+        } else {
+            int extensionPos = filename.lastIndexOf(46);
+            int lastSeparator = indexOfLastSeparator(filename);
+            return lastSeparator > extensionPos ? -1 : extensionPos;
+        }
+    }
 
 }

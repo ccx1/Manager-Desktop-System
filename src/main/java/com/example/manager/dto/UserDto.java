@@ -19,4 +19,12 @@ public class UserDto {
     private Set<String> permissions;
 
     private Set<String> roleNames;
+
+    private String iv;
+
+    private String key;
+
+    private boolean systemPathAdmin;
+
+
 }

@@ -3,6 +3,7 @@ package com.example.manager.service;
 import com.example.manager.dto.FileInfoDto;
 import com.example.manager.dto.UserDto;
 import com.example.manager.enums.HttpStatus;
+import com.example.manager.factory.UserFactory;
 import com.example.manager.result.CodeException;
 import com.example.manager.utils.*;
 import org.apache.commons.lang3.StringUtils;
@@ -30,22 +31,41 @@ public class FileManagerService {
     private static final String FILE_PATH = "file";
     private static final String BASE_PATH = "static/file_extend_imgs/ic-{type}.png";
     private static final Map<String, String> IMAGE_MAP = new HashMap<>();
-    private String mSKey = "juaKV3JyFdAFL0bTJzQQiQ==";
-    private String mIV = "NjQbpuh0YSBGaGMwEzBllw==";
 
-    public List<FileInfoDto> getFileInfo(UserDto userDto, String id) {
+    public Map<String, Object> getFileInfo(UserDto userDto, String id) {
+        Map<String, Object> result = new HashMap<>();
         if (StringUtils.isBlank(id)) {
-            if (userDto != null && userDto.getUsername().equals("admin")) {
+            if (userDto.getUsername().equals("admin")) {
                 List<File> rootLists = FileUtils.getRootLists();
-                return parseFileList(rootLists);
+                result.put("fileInfo", parseFileList(rootLists));
+                result.put("currentPath", "");
+            } else if (userDto.isSystemPathAdmin()) {
+                List<File> rootLists = FileUtils.listFile("/" + userDto.getUsername());
+                result.put("fileInfo", parseFileList(rootLists));
+                result.put("currentPath", AESUtils.encryptS5("/" + userDto.getUsername(), UserFactory.getUserKey(), UserFactory.getUserIv()));
+            } else {
+                try {
+                    String projectPath = new File("").getCanonicalPath();
+
+                    File f = new File(projectPath, MD5.md5(userDto.getUsername()));
+
+                    result.put("fileInfo", parseFileList(FileUtils.listFile(f.getAbsolutePath())));
+                    result.put("currentPath", AESUtils.encryptS5(f.getAbsolutePath(), UserFactory.getUserKey(), UserFactory.getUserIv()));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
+        } else {
+            String filePath = AESUtils.decryptS5(id, userDto.getKey(), userDto.getIv());
+            if (StringUtils.isBlank(filePath)) {
+                result.put("fileInfo", Collections.EMPTY_LIST);
+            }
+            List<File> files = FileUtils.listFile(filePath);
+            result.put("fileInfo", parseFileList(files));
+            result.put("currentPath", id);
         }
-        String filePath = AESUtils.decryptS5(id, mSKey, mIV);
-        if (StringUtils.isBlank(filePath)) {
-            return Collections.EMPTY_LIST;
-        }
-        List<File> files = FileUtils.listFile(filePath);
-        return parseFileList(files);
+
+        return result;
     }
 
     private List<FileInfoDto> parseFileList(List<File> files) {
@@ -64,7 +84,7 @@ public class FileManagerService {
         String path = file.getAbsolutePath();
         fileInfoDto.setName(StringUtils.isBlank(file.getName()) ? file.getAbsolutePath() : file.getName());
         fileInfoDto.setFile(file.isFile());
-        fileInfoDto.setId(AESUtils.encryptS5(path, mSKey, mIV));
+        fileInfoDto.setId(AESUtils.encryptS5(path, UserFactory.getUserKey(), UserFactory.getUserIv()));
         fileInfoDto.setSize(file.isFile() ? file.length() : 0);
 
         String extend = FILE_PATH;
@@ -113,7 +133,7 @@ public class FileManagerService {
         if (StringUtils.isBlank(id)) {
             throw new CodeException(HttpStatus.UN_KNOW_ERROR);
         }
-        String filePath = AESUtils.decryptS5(id, mSKey, mIV);
+        String filePath = AESUtils.decryptS5(id, UserFactory.getUserKey(), UserFactory.getUserIv());
         if (StringUtils.isBlank(filePath)) {
             throw new CodeException(HttpStatus.FILE_NOT_FIND);
         }
@@ -121,7 +141,7 @@ public class FileManagerService {
     }
 
     public void upload(String id, MultipartFile multipartFile) throws IOException {
-        String filePath = AESUtils.decryptS5(id, mSKey, mIV);
+        String filePath = AESUtils.decryptS5(id, UserFactory.getUserKey(), UserFactory.getUserIv());
         if (StringUtils.isBlank(filePath)) {
             throw new CodeException(HttpStatus.FILE_NOT_FIND);
         }
@@ -135,7 +155,9 @@ public class FileManagerService {
         }
         File temp = new File(file, originalFilename);
         if (temp.exists()) {
-            throw new CodeException(HttpStatus.FILE_UPLOAD_FILE_EXITS);
+            String extension = FileUtils.getExtension(originalFilename);
+            String name = FileUtils.onlyName(file.getAbsolutePath(), originalFilename, extension, 1);
+            temp = new File(file, name);
         }
         multipartFile.transferTo(temp);
         System.gc();
@@ -172,5 +194,22 @@ public class FileManagerService {
             }
         }
 
+    }
+
+    public void unZipFile(String id) {
+        String filePath = AESUtils.decryptS5(id, UserFactory.getUserKey(), UserFactory.getUserIv());
+        if (StringUtils.isBlank(filePath)) {
+            throw new CodeException(HttpStatus.FILE_NOT_FIND);
+        }
+
+        File file = new File(filePath);
+        // 获取父类文件夹
+        String parent = file.getParent();
+
+        try {
+            ZipUtils.unZip(filePath, parent);
+        } catch (Exception e) {
+            throw new CodeException(HttpStatus.UN_ZIP_FILE_FAIL);
+        }
     }
 }

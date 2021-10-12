@@ -29,6 +29,7 @@ public enum HttpStatus {
     FILE_UPLOAD_PATH_IS_FILES(401, "上传路径不能是文件"),
     FILE_UPLOAD_FILE_EXITS(401, "上传文件已经存在"),
     FILE_UPLOAD_FILE_NAME_EMPTY(401, "上传文件名字为空"),
+    UN_ZIP_FILE_FAIL(401, "文件解压缩失败"),
 
 
     // 未知异常

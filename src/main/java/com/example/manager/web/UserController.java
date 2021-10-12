@@ -21,8 +21,8 @@ import java.io.IOException;
 @RequestMapping("/user")
 public class UserController {
 
-    @Value("${server.servlet.context-path}")
-    private String contextPath;
+    @Value("${cas.resultUrl}")
+    private String resultUrl;
 
     @GetMapping("/login")
     public ResultEntity<String> login(String username, String password) {
@@ -35,7 +35,7 @@ public class UserController {
 
     @GetMapping("/loginCas")
     public void loginCas(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        response.sendRedirect(contextPath + "/index");
+        response.sendRedirect(resultUrl);
     }
 
 

@@ -4,6 +4,8 @@ import com.example.manager.dto.FileInfoDto;
 import com.example.manager.dto.UserDto;
 import com.example.manager.result.ResultEntity;
 import com.example.manager.service.FileManagerService;
+import com.example.manager.utils.FileUtils;
+import com.example.manager.utils.ZipUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.subject.Subject;
@@ -36,10 +38,7 @@ public class FileManagerController {
     public ResultEntity<Map<String, Object>> listFile(@RequestParam(value = "targetId", required = false) String id) {
         Subject subject = SecurityUtils.getSubject();
         UserDto userDto = (UserDto) subject.getPrincipal();
-        List<FileInfoDto> fileInfo = mFileManagerService.getFileInfo(userDto, id);
-        Map<String, Object> result = new HashMap<>();
-        result.put("currentPath", id);
-        result.put("fileInfo", fileInfo);
+        Map<String, Object> result = mFileManagerService.getFileInfo(userDto, id);
         return ResultEntity.ok(result);
     }
 
@@ -65,6 +64,14 @@ public class FileManagerController {
         mFileManagerService.upload(id, multipartFile);
         return ResultEntity.ok();
     }
+
+    @PostMapping("/unZip")
+    public ResultEntity<Void> unZip(@RequestBody Map<String, String> params) throws IOException {
+        // 解压文件
+        mFileManagerService.unZipFile(params.get("targetId"));
+        return ResultEntity.ok();
+    }
+
 
 
 }

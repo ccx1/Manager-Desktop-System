@@ -33,7 +33,7 @@ $(document).ready(function () {
                     }else {
                         window.location.replace(`${ window.location.protocol}//${window.location.host}/manager/success`)
                     }
-                }else {
+                } else {
                     errorText.empty()
                     errorText.append(data.msg)
                 }

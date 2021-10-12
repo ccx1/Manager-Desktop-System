@@ -1,8 +1,13 @@
 package com.example.manager.utils;
 
 import java.io.*;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 public class ZipUtils {
@@ -81,9 +86,9 @@ public class ZipUtils {
     }
 
 
-    public static void createZipFile(List<String> fileList,  OutputStream outputStream) {
+    public static void createZipFile(List<String> fileList, OutputStream outputStream) {
 
-        if (fileList == null || fileList.size() == 0 ) {
+        if (fileList == null || fileList.size() == 0) {
             return;
         }
 
@@ -131,4 +136,45 @@ public class ZipUtils {
         }
 
     }
+
+
+    /**
+     * 解压缩
+     * @param sZipPathFile 要解压的文件
+     * @param sDestPath 解压到某文件夹
+     * @return
+     */
+    public static void unZip(String sZipPathFile, String sDestPath) {
+        try {
+            // 先指定压缩档的位置和档名，建立FileInputStream对象
+            FileInputStream fins = new FileInputStream(sZipPathFile);
+            // 将fins传入ZipInputStream中
+            ZipInputStream zins = new ZipInputStream(fins, Charset.forName("GBK"));
+            ZipEntry ze = null;
+            byte[] ch = new byte[256];
+            while ((ze = zins.getNextEntry()) != null) {
+                File zfile = new File(sDestPath, ze.getName());
+                File fpath = new File(zfile.getParentFile().getPath());
+                if (ze.isDirectory()) {
+                    if (!zfile.exists())
+                        zfile.mkdirs();
+                    zins.closeEntry();
+                } else {
+                    if (!fpath.exists())
+                        fpath.mkdirs();
+                    FileOutputStream fouts = new FileOutputStream(zfile);
+                    int i;
+                    while ((i = zins.read(ch)) != -1)
+                        fouts.write(ch, 0, i);
+                    zins.closeEntry();
+                    fouts.close();
+                }
+            }
+            fins.close();
+            zins.close();
+        } catch (Exception e) {
+            System.err.println("Extract error:" + e.getMessage());
+        }
+    }
+
 }
