@@ -73,5 +73,11 @@ public class FileManagerController {
     }
 
 
+    @PostMapping("/rename")
+    public ResultEntity<Void> rename(@RequestBody Map<String, String> params) throws IOException {
+        // 重命名文件
+        mFileManagerService.rename(params.get("targetId"), params.get("newName"));
+        return ResultEntity.ok();
+    }
 
 }

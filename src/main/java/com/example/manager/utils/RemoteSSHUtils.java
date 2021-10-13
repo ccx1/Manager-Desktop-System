@@ -1,16 +1,15 @@
 package com.example.manager.utils;
 
-import ch.ethz.ssh2.Connection;
-import ch.ethz.ssh2.SCPClient;
-import ch.ethz.ssh2.Session;
-import ch.ethz.ssh2.StreamGobbler;
+import ch.ethz.ssh2.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.util.Scanner;
 
 /**
  * @author ：chicunxiang
@@ -25,6 +24,7 @@ public class RemoteSSHUtils {
     @AllArgsConstructor
     public static class RemoteConnect {
         private String ip;
+        private int port;
         private String userName;
         private String password;
     }
@@ -32,6 +32,38 @@ public class RemoteSSHUtils {
     private static final Logger logger = LoggerFactory.getLogger(RemoteSSHUtils.class);
     private static String DEFAULTCHARTSET = "UTF-8";
     private static Connection conn;
+
+    public static void main(String[] args) throws IOException {
+        RemoteConnect remoteConnect = new RemoteConnect("10.11.15.8", 96, "root", "Xxzx123456");
+        login(remoteConnect);
+
+        Scanner scanner = new Scanner(System.in);
+        while (true) {
+            String next = scanner.next();
+            executeShell(next);
+        }
+//        Session session = conn.openSession();
+//        session.requestPTY("bash");
+//// 打开一个Shell
+//        session.startShell();
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                String result = "";
+//                System.out.println("开始打印");
+//                result = processStdout(session.getStdout(), DEFAULTCHARTSET);
+//                // 如果为得到标准输出为空，说明脚本执行出错了 StringUtils.isBlank(result)
+//                if (result.equals("")) {
+//                    result = processStdout(session.getStderr(), DEFAULTCHARTSET);
+//                }
+//                System.out.println(result);
+//            }
+//        }).start();
+//        executeShell(session, "pwd");
+//        executeShell(session, "cd /opt");
+//        executeShell(session, "ls");
+
+    }
 
     /**
      * 远程登录linux 服务器
@@ -42,7 +74,7 @@ public class RemoteSSHUtils {
     public static boolean login(RemoteConnect remoteConnect) {
         boolean flag = false;
         try {
-            conn = new Connection(remoteConnect.getIp());
+            conn = new Connection(remoteConnect.getIp(), remoteConnect.getPort());
             conn.connect();//连接
             flag = conn.authenticateWithPassword(remoteConnect.getUserName(), remoteConnect.getPassword());
             if (flag) {
@@ -74,7 +106,7 @@ public class RemoteSSHUtils {
         // 输入密钥所在路径
         // File keyfile = new File("C:\\temp\\private");
         try {
-            conn = new Connection(remoteConnect.getIp());
+            conn = new Connection(remoteConnect.getIp(), remoteConnect.getPort());
             conn.connect();
             // 登录认证
             flag = conn.authenticateWithPublicKey(remoteConnect.getUserName(), keyFile, keyfilePass);
@@ -104,9 +136,8 @@ public class RemoteSSHUtils {
 
         boolean flag = false;
         // 输入密钥所在路径
-        // File keyfile = new File("C:\\temp\\private");
         try {
-            conn = new Connection(remoteConnect.getIp());
+            conn = new Connection(remoteConnect.getIp(), remoteConnect.getPort());
             conn.connect();
             // 登录认证
             flag = conn.authenticateWithPublicKey(remoteConnect.getUserName(), keys, keyPass);
@@ -141,6 +172,42 @@ public class RemoteSSHUtils {
 
     }
 
+    public static void executeShell(String cmd) throws IOException {
+        Session session = conn.openSession();
+        // 建立虚拟终端
+        session.requestPTY("bash");
+        // 打开一个Shell
+        session.startShell();
+        StreamGobbler stdOut = new StreamGobbler(session.getStdout());
+        StreamGobbler stdErr = new StreamGobbler(session.getStderr());
+        BufferedReader stdoutReader = new BufferedReader(new InputStreamReader(stdOut));
+        BufferedReader stderrReader = new BufferedReader(new InputStreamReader(stdErr));
+
+        // 准备输入命令
+        PrintWriter out = new PrintWriter(session.getStdin());
+        // 输入待执行命令
+        out.println(cmd);
+        out.println("exit");
+        // 6. 关闭输入流
+        out.close();
+        // 7. 等待，除非1.连接关闭；2.输出数据传送完毕；3.进程状态为退出；4.超时
+        session.waitForCondition(ChannelCondition.CLOSED | ChannelCondition.EOF | ChannelCondition.EXIT_STATUS, 30000);
+        System.out.println("Here is the output from stdout:");
+        while (true) {
+            String line = stdoutReader.readLine();
+            if (line == null)
+                break;
+            System.out.println(line);
+        }
+        System.out.println("Here is the output from stderr:");
+        while (true) {
+            String line = stderrReader.readLine();
+            if (line == null)
+                break;
+            System.out.println(line);
+        }
+    }
+
     /**
      * @param in      输入流对象
      * @param charset 编码
@@ -151,12 +218,13 @@ public class RemoteSSHUtils {
      */
     public static String processStdout(InputStream in, String charset) {
         InputStream stdout = new StreamGobbler(in);
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         try {
             BufferedReader br = new BufferedReader(new InputStreamReader(stdout, charset));
             String line = null;
             while ((line = br.readLine()) != null) {
                 buffer.append(line + "\n");
+                System.out.println(line);
             }
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
@@ -283,38 +351,5 @@ public class RemoteSSHUtils {
         }
     }
 
-    //重新打包上传启动功能
-    public static String allDeploy(String ip, String userName,
-                                   String password) {
-        RemoteConnect connect = new RemoteConnect(ip, userName, password);
-        if (login(connect)) {
-            String commandLine = "ps -ef|grep dailybuild-|grep -v grep|wc -l";
-            String execute = execute(commandLine);
-            if (execute.equals("1\n")) {
-                String str = "ps -ef|grep dailybuild-|grep -v grep |awk '{print $2}' | xargs kill -9;";
-                String result = execute(str);
-//                String deleteStr = "cd /export;rm -rf dailybuild-0.0.1-SNAPSHOT.jar";
-                String deleteStr = "find / -name dailybuild-0.0.1-SNAPSHOT.jar | xargs rm -rf ";
-                execute(deleteStr);
-                SCPClient client = new SCPClient(conn);
-                try {
-                    client.put("D:\\Project\\dailybuildV3_New\\target\\dailybuild-0.0.1-SNAPSHOT.jar", "/export");
-                    logger.info("-----上传jar包成功----开始启动----");
-                    execute("nohup java -jar /export/dailybuild-0.0.1-SNAPSHOT.jar > /export/dailybuild.log &");
-                    String startLog = execute("tail -f /export/dailybuild.log");
-                    if (startLog.contains("Started DailyBuildApplication"))
-                        logger.info("-----完成启动----");
-                    conn.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                String isExist = "find / -name dailybuild-0.0.1-SNAPSHOT.jar";
-                String result = execute(isExist);
-                if (result != "") execute("nohup java -jar " + result + ">/export/dailybuild.log &");
-            }
-        }
-        return "完成";
-    }
 
 }

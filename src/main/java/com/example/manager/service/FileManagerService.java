@@ -16,6 +16,9 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.net.URLEncoder;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 
 /**
@@ -210,6 +213,23 @@ public class FileManagerService {
             ZipUtils.unZip(filePath, parent);
         } catch (Exception e) {
             throw new CodeException(HttpStatus.UN_ZIP_FILE_FAIL);
+        }
+    }
+
+    public void rename(String targetId, String name) {
+        String filePath = AESUtils.decryptS5(targetId, UserFactory.getUserKey(), UserFactory.getUserIv());
+        if (StringUtils.isBlank(filePath)) {
+            throw new CodeException(HttpStatus.FILE_NOT_FIND);
+        }
+
+        File file = new File(filePath);
+        String extension = FileUtils.getExtension(file.getName());
+        String onlyName = FileUtils.onlyName(file.getParent(), name + (StringUtils.isBlank(extension) ? "" : ("." + extension)), extension, 1);
+        try {
+            Files.move(Paths.get(filePath), Paths.get(new File(file.getParent(), onlyName + (StringUtils.isBlank(extension) ? "" : ("." + extension))).getAbsolutePath()),
+                    StandardCopyOption.ATOMIC_MOVE);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
