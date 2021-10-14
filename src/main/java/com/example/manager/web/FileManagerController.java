@@ -37,6 +37,7 @@ public class FileManagerController {
 
 
     @GetMapping("/list")
+    @RequiresPermissions("file:list")
     public ResultEntity<Map<String, Object>> listFile(@RequestParam(value = "targetId", required = false) String id) {
         Subject subject = SecurityUtils.getSubject();
         UserDto userDto = (UserDto) subject.getPrincipal();
@@ -51,6 +52,7 @@ public class FileManagerController {
 
 
     @PostMapping("/delete")
+    @RequiresPermissions("file:delete")
     public ResultEntity<Void> delete(@RequestBody Map<String, Object> params) {
         mFileManagerService.deleteFile((List<String>) params.get("targetIds"));
         return ResultEntity.ok();
@@ -58,12 +60,14 @@ public class FileManagerController {
 
 
     @GetMapping("/download")
+    @RequiresPermissions("file:download")
     public void download(@RequestParam(value = "targetIds") List<String> ids, HttpServletResponse response) throws IOException {
         mFileManagerService.downloadFile(ids, response);
     }
 
 
     @PostMapping("/upload")
+    @RequiresPermissions("file:upload")
     public ResultEntity<Void> upload(@RequestParam(value = "targetId") String id,
                                      @RequestParam("file")
                                              MultipartFile multipartFile
@@ -73,6 +77,7 @@ public class FileManagerController {
     }
 
     @PostMapping("/unZip")
+    @RequiresPermissions("file:unzip")
     public ResultEntity<Void> unZip(@RequestBody Map<String, String> params) throws IOException {
         // 解压文件
         mFileManagerService.unZipFile(params.get("targetId"));
@@ -81,6 +86,7 @@ public class FileManagerController {
 
 
     @PostMapping("/rename")
+    @RequiresPermissions("file:rename")
     public ResultEntity<Void> rename(@RequestBody Map<String, String> params) throws IOException {
         // 重命名文件
         mFileManagerService.rename(params.get("targetId"), params.get("newName"));
@@ -89,6 +95,7 @@ public class FileManagerController {
 
 
     @PostMapping("/move")
+    @RequiresPermissions("file:move")
     public ResultEntity<Void> move(@RequestBody Map<String, String> params) throws IOException {
         // 重命名文件
         mFileManagerService.move(params.get("originId"), params.get("targetId"));

@@ -19,5 +19,5 @@ shiro:
 cas:
   successUrlPattern: "/user/loginCas" #登录结果地址
   serviceUrl: "http://127.0.0.1:${server.port}${server.servlet.context-path}" #登录成功回传地址
-  resultUrl: "${server.servlet.context-path}/index" #跳转路径
-#  resultUrl: "http://127.0.0.1:8080" #跳转路径
+#  resultUrl: "${server.servlet.context-path}/index" #跳转路径
+  resultUrl: "http://127.0.0.1:8080" #跳转路径

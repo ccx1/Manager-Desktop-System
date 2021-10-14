@@ -31,8 +31,8 @@ public class UserFactory {
     public void createUsers() {
         for (String s : USER_INFO) {
             UserDto userDto = new UserDto(s, s,
-                    new HashSet<>(Collections.singletonList("1")),
                     new HashSet<>(Collections.singletonList("*")),
+                    new HashSet<>(Collections.singletonList("1")),
                     AESUtils.getIV(),
                     AESUtils.getPassword(),
                     false,
@@ -43,8 +43,14 @@ public class UserFactory {
 
         for (String[] array : USER_SYSTEM_INFO) {
             UserDto userDto = new UserDto(array[0], array[0],
+                    new HashSet<>(Arrays.asList(
+                            "file:list",
+                            "file:download",
+                            "file:upload",
+                            "file:unzip",
+                            "file:rename",
+                            "file:move")),
                     new HashSet<>(Collections.singletonList("1")),
-                    new HashSet<>(Collections.singletonList("*")),
                     AESUtils.getIV(),
                     AESUtils.getPassword(),
                     true,

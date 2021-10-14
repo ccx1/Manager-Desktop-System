@@ -4,6 +4,7 @@ import com.example.manager.dto.CommandDto;
 import com.example.manager.dto.ProcessDto;
 import com.example.manager.result.ResultEntity;
 import com.example.manager.utils.ProcessUtils;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +21,7 @@ public class ProcessController {
 
 
     @PostMapping("/cmd")
+    @RequiresPermissions("process:cmd")
     public ResultEntity<String> cmd(@RequestBody CommandDto cmd) {
         return ResultEntity.ok(ProcessUtils.runCommand(cmd.getCmd()));
 
@@ -33,6 +35,7 @@ public class ProcessController {
     }
 
     @GetMapping("/kill")
+    @RequiresPermissions("process:kill")
     public ResultEntity<Integer> kill(@RequestParam("pid") int pid) {
         return ResultEntity.ok(ProcessUtils.stopProcess(pid));
 
