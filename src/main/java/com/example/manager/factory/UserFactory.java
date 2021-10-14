@@ -17,8 +17,11 @@ public class UserFactory {
 
     private static final Map<String, UserDto> users = new HashMap<>();
 
-    private static final String[] USER_INFO = {"admin", "test"};
-    private static final String[] USER_SYSTEM_INFO = {"opt"};
+    private static final String[] USER_INFO = {"admin", "common"};
+    private static final String[][] USER_SYSTEM_INFO = {
+            {"opt", "/opt"},
+            {"tomcat", "/opt/apache-tomcat-9.0.44/webapps"}
+    };
 
     public static UserDto findUser(String username) {
         return users.get(username);
@@ -32,18 +35,20 @@ public class UserFactory {
                     new HashSet<>(Collections.singletonList("*")),
                     AESUtils.getIV(),
                     AESUtils.getPassword(),
-                    false
+                    false,
+                    s
             );
             users.put(userDto.getUsername(), userDto);
         }
 
-        for (String s : USER_SYSTEM_INFO) {
-            UserDto userDto = new UserDto(s, s,
+        for (String[] array : USER_SYSTEM_INFO) {
+            UserDto userDto = new UserDto(array[0], array[0],
                     new HashSet<>(Collections.singletonList("1")),
                     new HashSet<>(Collections.singletonList("*")),
                     AESUtils.getIV(),
                     AESUtils.getPassword(),
-                    true
+                    true,
+                    array[1]
             );
             users.put(userDto.getUsername(), userDto);
         }

@@ -26,5 +26,6 @@ public class UserDto {
 
     private boolean systemPathAdmin;
 
+    private String path;
 
 }

@@ -43,9 +43,9 @@ public class FileManagerService {
                 result.put("fileInfo", parseFileList(rootLists));
                 result.put("currentPath", "");
             } else if (userDto.isSystemPathAdmin()) {
-                List<File> rootLists = FileUtils.listFile("/" + userDto.getUsername());
+                List<File> rootLists = FileUtils.listFile(userDto.getPath());
                 result.put("fileInfo", parseFileList(rootLists));
-                result.put("currentPath", AESUtils.encryptS5("/" + userDto.getUsername(), UserFactory.getUserKey(), UserFactory.getUserIv()));
+                result.put("currentPath", AESUtils.encryptS5(userDto.getPath(), UserFactory.getUserKey(), UserFactory.getUserIv()));
             } else {
                 try {
                     String projectPath = new File("").getCanonicalPath();
@@ -223,10 +223,10 @@ public class FileManagerService {
         }
 
         File file = new File(filePath);
-        String extension = FileUtils.getExtension(file.getName());
-        String onlyName = FileUtils.onlyName(file.getParent(), name + (StringUtils.isBlank(extension) ? "" : ("." + extension)), extension, 1);
+        String extension = FileUtils.getExtension(name);
+        String onlyName = FileUtils.onlyName(file.getParent(), name, extension, 1);
         try {
-            Files.move(Paths.get(filePath), Paths.get(new File(file.getParent(), onlyName + (StringUtils.isBlank(extension) ? "" : ("." + extension))).getAbsolutePath()),
+            Files.move(Paths.get(filePath), Paths.get(new File(file.getParent(), onlyName).getAbsolutePath()),
                     StandardCopyOption.ATOMIC_MOVE);
         } catch (IOException e) {
             e.printStackTrace();
