@@ -7,6 +7,7 @@ import com.example.manager.service.FileManagerService;
 import com.example.manager.utils.FileUtils;
 import com.example.manager.utils.ZipUtils;
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +62,7 @@ public class FileManagerController {
 
     @GetMapping("/download")
     @RequiresPermissions("file:download")
+    @RequiresAuthentication
     public void download(@RequestParam(value = "targetIds") List<String> ids, HttpServletResponse response) throws IOException {
         mFileManagerService.downloadFile(ids, response);
     }
