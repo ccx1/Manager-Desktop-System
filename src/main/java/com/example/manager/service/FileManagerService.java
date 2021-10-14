@@ -232,4 +232,24 @@ public class FileManagerService {
             e.printStackTrace();
         }
     }
+
+    public void move(String originId, String targetId) {
+        String targetFilePath = AESUtils.decryptS5(targetId, UserFactory.getUserKey(), UserFactory.getUserIv());
+        if (StringUtils.isBlank(targetFilePath)) {
+            throw new CodeException(HttpStatus.FILE_NOT_FIND);
+        }
+        String originFilePath = AESUtils.decryptS5(originId, UserFactory.getUserKey(), UserFactory.getUserIv());
+        if (StringUtils.isBlank(originFilePath)) {
+            throw new CodeException(HttpStatus.FILE_NOT_FIND);
+        }
+
+
+        try {
+            Files.move(Paths.get(originFilePath), Paths.get(new File(targetFilePath,new File(originFilePath).getName()).getAbsolutePath()),
+                    StandardCopyOption.ATOMIC_MOVE);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
 }

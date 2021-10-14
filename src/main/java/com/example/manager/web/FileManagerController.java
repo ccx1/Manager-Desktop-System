@@ -15,6 +15,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +40,11 @@ public class FileManagerController {
     public ResultEntity<Map<String, Object>> listFile(@RequestParam(value = "targetId", required = false) String id) {
         Subject subject = SecurityUtils.getSubject();
         UserDto userDto = (UserDto) subject.getPrincipal();
+        try {
+            id = URLDecoder.decode(id, "utf-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
         Map<String, Object> result = mFileManagerService.getFileInfo(userDto, id);
         return ResultEntity.ok(result);
     }
@@ -79,5 +86,14 @@ public class FileManagerController {
         mFileManagerService.rename(params.get("targetId"), params.get("newName"));
         return ResultEntity.ok();
     }
+
+
+    @PostMapping("/move")
+    public ResultEntity<Void> move(@RequestBody Map<String, String> params) throws IOException {
+        // 重命名文件
+        mFileManagerService.move(params.get("originId"), params.get("targetId"));
+        return ResultEntity.ok();
+    }
+
 
 }

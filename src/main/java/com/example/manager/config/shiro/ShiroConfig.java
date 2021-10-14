@@ -50,6 +50,7 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/user/login", "anon");
         filterChainDefinitionMap.put("/res/**", "anon");
         filterChainDefinitionMap.put("/login", "anon");
+        filterChainDefinitionMap.put("/file/download", "anon");
         filterChainDefinitionMap.put("/**", "authc");
         if (serviceUrl.contains("127.0.0.1")) {
             try {
