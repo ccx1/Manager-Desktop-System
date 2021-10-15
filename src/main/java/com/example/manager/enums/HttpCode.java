@@ -5,7 +5,7 @@ package com.example.manager.enums;
  */
 
 
-public enum HttpStatus {
+public enum HttpCode {
 
     // 成功
     OK(200, "SUCCESS"),
@@ -41,7 +41,7 @@ public enum HttpStatus {
     private String msg;
 
 
-    HttpStatus(int code, String msg) {
+    HttpCode(int code, String msg) {
         this.code = code;
         this.msg = msg;
     }

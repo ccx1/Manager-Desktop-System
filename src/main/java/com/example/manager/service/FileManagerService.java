@@ -2,7 +2,7 @@ package com.example.manager.service;
 
 import com.example.manager.dto.FileInfoDto;
 import com.example.manager.dto.UserDto;
-import com.example.manager.enums.HttpStatus;
+import com.example.manager.enums.HttpCode;
 import com.example.manager.factory.UserFactory;
 import com.example.manager.result.CodeException;
 import com.example.manager.utils.*;
@@ -134,11 +134,11 @@ public class FileManagerService {
 
     private File checkTargetId(String id) {
         if (StringUtils.isBlank(id)) {
-            throw new CodeException(HttpStatus.UN_KNOW_ERROR);
+            throw new CodeException(HttpCode.UN_KNOW_ERROR);
         }
         String filePath = AESUtils.decryptS5(id, UserFactory.getUserKey(), UserFactory.getUserIv());
         if (StringUtils.isBlank(filePath)) {
-            throw new CodeException(HttpStatus.FILE_NOT_FIND);
+            throw new CodeException(HttpCode.FILE_NOT_FIND);
         }
         return new File(filePath);
     }
@@ -146,15 +146,15 @@ public class FileManagerService {
     public void upload(String id, MultipartFile multipartFile) throws IOException {
         String filePath = AESUtils.decryptS5(id, UserFactory.getUserKey(), UserFactory.getUserIv());
         if (StringUtils.isBlank(filePath)) {
-            throw new CodeException(HttpStatus.FILE_NOT_FIND);
+            throw new CodeException(HttpCode.FILE_NOT_FIND);
         }
         File file = new File(filePath);
         if (file.isFile()) {
-            throw new CodeException(HttpStatus.FILE_UPLOAD_PATH_IS_FILES);
+            throw new CodeException(HttpCode.FILE_UPLOAD_PATH_IS_FILES);
         }
         String originalFilename = multipartFile.getOriginalFilename();
         if (StringUtils.isBlank(originalFilename)) {
-            throw new CodeException(HttpStatus.FILE_UPLOAD_FILE_NAME_EMPTY);
+            throw new CodeException(HttpCode.FILE_UPLOAD_FILE_NAME_EMPTY);
         }
         File temp = new File(file, originalFilename);
         if (temp.exists()) {
@@ -202,7 +202,7 @@ public class FileManagerService {
     public void unZipFile(String id) {
         String filePath = AESUtils.decryptS5(id, UserFactory.getUserKey(), UserFactory.getUserIv());
         if (StringUtils.isBlank(filePath)) {
-            throw new CodeException(HttpStatus.FILE_NOT_FIND);
+            throw new CodeException(HttpCode.FILE_NOT_FIND);
         }
 
         File file = new File(filePath);
@@ -212,14 +212,14 @@ public class FileManagerService {
         try {
             ZipUtils.unZip(filePath, parent);
         } catch (Exception e) {
-            throw new CodeException(HttpStatus.UN_ZIP_FILE_FAIL);
+            throw new CodeException(HttpCode.UN_ZIP_FILE_FAIL);
         }
     }
 
     public void rename(String targetId, String name) {
         String filePath = AESUtils.decryptS5(targetId, UserFactory.getUserKey(), UserFactory.getUserIv());
         if (StringUtils.isBlank(filePath)) {
-            throw new CodeException(HttpStatus.FILE_NOT_FIND);
+            throw new CodeException(HttpCode.FILE_NOT_FIND);
         }
 
         File file = new File(filePath);
@@ -236,16 +236,15 @@ public class FileManagerService {
     public void move(String originId, String targetId) {
         String targetFilePath = AESUtils.decryptS5(targetId, UserFactory.getUserKey(), UserFactory.getUserIv());
         if (StringUtils.isBlank(targetFilePath)) {
-            throw new CodeException(HttpStatus.FILE_NOT_FIND);
+            throw new CodeException(HttpCode.FILE_NOT_FIND);
         }
         String originFilePath = AESUtils.decryptS5(originId, UserFactory.getUserKey(), UserFactory.getUserIv());
         if (StringUtils.isBlank(originFilePath)) {
-            throw new CodeException(HttpStatus.FILE_NOT_FIND);
+            throw new CodeException(HttpCode.FILE_NOT_FIND);
         }
 
-
         try {
-            Files.move(Paths.get(originFilePath), Paths.get(new File(targetFilePath,new File(originFilePath).getName()).getAbsolutePath()),
+            Files.move(Paths.get(originFilePath), Paths.get(new File(targetFilePath, new File(originFilePath).getName()).getAbsolutePath()),
                     StandardCopyOption.ATOMIC_MOVE);
         } catch (IOException e) {
             e.printStackTrace();

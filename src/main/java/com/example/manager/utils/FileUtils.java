@@ -1,7 +1,7 @@
 package com.example.manager.utils;
 
 
-import com.example.manager.enums.HttpStatus;
+import com.example.manager.enums.HttpCode;
 import com.example.manager.result.CodeException;
 import org.springframework.util.DigestUtils;
 
@@ -179,7 +179,7 @@ public class FileUtils {
     public static void deleteFile(File file) {
         //判断文件不为null或文件目录存在
         if (file == null || !file.exists()) {
-            throw new CodeException(HttpStatus.FILE_NOT_FIND);
+            throw new CodeException(HttpCode.FILE_NOT_FIND);
         }
         List<File> files = listFile(file.getAbsolutePath());
         for (File f : files) {

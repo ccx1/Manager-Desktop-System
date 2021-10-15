@@ -1,7 +1,7 @@
 package com.example.manager.config.shiro.realm;
 
 import com.example.manager.dto.UserDto;
-import com.example.manager.enums.HttpStatus;
+import com.example.manager.enums.HttpCode;
 import com.example.manager.factory.UserFactory;
 import com.example.manager.result.CodeException;
 import lombok.extern.slf4j.Slf4j;
@@ -12,10 +12,8 @@ import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -69,11 +67,11 @@ public class ShiroAuthorizingRealm extends AuthorizingRealm {
         UserDto userDto = UserFactory.findUser(username);
 
         if (userDto == null) {
-            throw new CodeException(HttpStatus.USER_NOT_EXIST_FAIL);
+            throw new CodeException(HttpCode.USER_NOT_EXIST_FAIL);
         }
 
         if (!password.equals(userDto.getPassword())) {
-            throw new CodeException(HttpStatus.USER_PASSWORD_NOT_MATCH);
+            throw new CodeException(HttpCode.USER_PASSWORD_NOT_MATCH);
         }
         // 如果找到这个用户. 通过
         return new SimpleAuthenticationInfo(userDto, password, getName());

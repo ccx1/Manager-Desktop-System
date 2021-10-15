@@ -13,8 +13,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 
-import java.net.Inet4Address;
-import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.LinkedHashMap;
@@ -35,6 +33,9 @@ public class ShiroConfig {
 
     @Value("${cas.serviceUrl}")
     private String serviceUrl;
+
+    @Value("${cas.loginPage}")
+    private String loginPage;
 
 
     @Bean
@@ -59,10 +60,20 @@ public class ShiroConfig {
                 e.printStackTrace();
             }
         }
-        shiroFilterFactoryBean.setLoginUrl("/login?redirect=" + serviceUrl + successUrlPattern);
-        shiroFilterFactoryBean.setUnauthorizedUrl("/login?redirect=" + serviceUrl + successUrlPattern);
+        shiroFilterFactoryBean.setLoginUrl(loginPage + "?redirect=" + serviceUrl + successUrlPattern);
+        shiroFilterFactoryBean.setUnauthorizedUrl(loginPage + "?redirect=" + serviceUrl + successUrlPattern);
         shiroFilterFactoryBean.setFilterChainDefinitionMap(filterChainDefinitionMap);
+        // 设置自定义登录拦截
+//        Map<String, Filter> filters = new HashMap<>();
+//        filters.put("authc", shiroLoginFilter());
+//        shiroFilterFactoryBean.setFilters(filters);
+
         return shiroFilterFactoryBean;
+    }
+
+    @Bean
+    public ShiroLoginFilter shiroLoginFilter() {
+        return new ShiroLoginFilter();
     }
 
     @Bean

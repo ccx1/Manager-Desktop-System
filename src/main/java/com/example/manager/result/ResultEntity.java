@@ -1,6 +1,6 @@
 package com.example.manager.result;
 
-import com.example.manager.enums.HttpStatus;
+import com.example.manager.enums.HttpCode;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 
@@ -30,35 +30,35 @@ public class ResultEntity<T> {
 
     public static <T> ResultEntity<T> ok(T data) {
         ResultEntity<T> entity = new ResultEntity<T>();
-        entity.setCode(HttpStatus.OK.getCode());
-        entity.setMsg(HttpStatus.OK.getMsg());
+        entity.setCode(HttpCode.OK.getCode());
+        entity.setMsg(HttpCode.OK.getMsg());
         entity.setData(data);
         return entity;
     }
 
 
-    public static ResultEntity<Void> fail(HttpStatus httpStatus, Throwable e) {
+    public static ResultEntity<Void> fail(HttpCode httpCode, Throwable e) {
         ResultEntity<Void> entity = new ResultEntity<Void>();
-        entity.setCode(httpStatus.getCode());
-        entity.setMsg(e == null ? httpStatus.getMsg() : e.getMessage());
+        entity.setCode(httpCode.getCode());
+        entity.setMsg(e == null ? httpCode.getMsg() : e.getMessage());
         return entity;
     }
 
 
-    public static ResultEntity<Void> fail(HttpStatus httpStatus) {
-        return fail(httpStatus, null);
+    public static ResultEntity<Void> fail(HttpCode httpCode) {
+        return fail(httpCode, null);
     }
 
 
     public static ResultEntity<Void> fail(Exception e) {
-        return fail(HttpStatus.UN_KNOW_ERROR, e);
+        return fail(HttpCode.UN_KNOW_ERROR, e);
     }
 
     public static ResultEntity<Void> fail(Throwable e) {
        if ( e instanceof CodeException){
           return fail( ((CodeException) e));
        }
-        return fail(HttpStatus.UN_KNOW_ERROR, e);
+        return fail(HttpCode.UN_KNOW_ERROR, e);
     }
 
     public static ResultEntity<Void> fail(CodeException e) {
