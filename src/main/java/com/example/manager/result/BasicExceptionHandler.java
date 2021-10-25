@@ -1,7 +1,6 @@
 package com.example.manager.result;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /**
@@ -15,14 +14,14 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class BasicExceptionHandler {
 
 
-    @ExceptionHandler(CodeException.class)
-    public ResultEntity<Void> handleException(CodeException e) {
-        return ResultEntity.fail(e);
-    }
-
-    @ExceptionHandler(Exception.class)
-    public ResultEntity<Void> handleCodeException(Exception e) {
-        return ResultEntity.fail(e);
-    }
+//    @ExceptionHandler(CodeException.class)
+//    public ResultEntity<Void> handleException(CodeException e) {
+//        return ResultEntity.fail(e);
+//    }
+//
+//    @ExceptionHandler(Exception.class)
+//    public ResultEntity<Void> handleCodeException(Exception e) {
+//        return ResultEntity.fail(e);
+//    }
 
 }

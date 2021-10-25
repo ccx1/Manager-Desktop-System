@@ -30,6 +30,7 @@ public enum HttpCode {
     FILE_UPLOAD_FILE_EXITS(401, "上传文件已经存在"),
     FILE_UPLOAD_FILE_NAME_EMPTY(401, "上传文件名字为空"),
     UN_ZIP_FILE_FAIL(401, "文件解压缩失败"),
+    TARGET_DIR_FILE_EXITS_FAIL(401, "目标文件夹存在相同文件"),
 
 
     // 未知异常

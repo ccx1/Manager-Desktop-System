@@ -1,11 +1,9 @@
 package com.example.manager.web;
 
-import com.example.manager.dto.FileInfoDto;
+import com.example.manager.dto.FileIdDto;
 import com.example.manager.dto.UserDto;
 import com.example.manager.result.ResultEntity;
 import com.example.manager.service.FileManagerService;
-import com.example.manager.utils.FileUtils;
-import com.example.manager.utils.ZipUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
@@ -18,7 +16,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -101,6 +98,15 @@ public class FileManagerController {
     public ResultEntity<Void> move(@RequestBody Map<String, String> params) throws IOException {
         // 重命名文件
         mFileManagerService.move(params.get("originId"), params.get("targetId"));
+        return ResultEntity.ok();
+    }
+
+
+    @PostMapping("/recycle")
+    @RequiresPermissions("file:recycle")
+    public ResultEntity<Void> recycle(@RequestBody FileIdDto fileIdDto) {
+        // 重命名文件
+        mFileManagerService.recycle(fileIdDto.getTargetIds());
         return ResultEntity.ok();
     }
 

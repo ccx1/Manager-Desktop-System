@@ -14,11 +14,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -242,13 +245,42 @@ public class FileManagerService {
         if (StringUtils.isBlank(originFilePath)) {
             throw new CodeException(HttpCode.FILE_NOT_FIND);
         }
-
+        File file = new File(targetFilePath, new File(originFilePath).getName());
+        if (file.exists()) {
+            throw new CodeException(HttpCode.TARGET_DIR_FILE_EXITS_FAIL);
+        }
         try {
-            Files.move(Paths.get(originFilePath), Paths.get(new File(targetFilePath, new File(originFilePath).getName()).getAbsolutePath()),
+            Files.move(Paths.get(originFilePath), Paths.get(file.getAbsolutePath()),
                     StandardCopyOption.ATOMIC_MOVE);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
     }
+
+    public void recycle(List<String> ids) {
+        // 回收站思路, 1. 移动文件. 2. 文件原路径记录. 3. 文件不可操作
+        try {
+            String projectPath = new File("").getCanonicalPath();
+            File f = new File(projectPath, MD5.md5("recycle"));
+            // 获取到回收站的文件列表
+            File currentTimeDir = new File(f, new SimpleDateFormat("yyyyMMdd").format(new Date()));
+            if (!currentTimeDir.exists()) {
+                currentTimeDir.mkdirs();
+            }
+            for (String id : ids) {
+                String targetFilePath = AESUtils.decryptS5(id, UserFactory.getUserKey(), UserFactory.getUserIv());
+                // 将文件移动到回收站
+                File file = new File(targetFilePath);
+                String extension = FileUtils.getExtension(file.getName());
+                String onlyName = FileUtils.onlyName(currentTimeDir.getAbsolutePath(), file.getName(), extension, 1);
+                Files.copy(Paths.get(targetFilePath), Paths.get(new File(currentTimeDir,onlyName).getAbsolutePath()), StandardCopyOption.COPY_ATTRIBUTES);
+                Files.delete(Paths.get(targetFilePath));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
+
+

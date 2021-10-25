@@ -49,6 +49,7 @@ public class UserFactory {
                             "file:upload",
                             "file:unzip",
                             "file:rename",
+                            "file:recycle",
                             "file:move")),
                     new HashSet<>(Collections.singletonList("1")),
                     AESUtils.getIV(),
